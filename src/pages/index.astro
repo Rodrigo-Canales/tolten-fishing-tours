@@ -1,0 +1,503 @@
+---
+import Base from '../layouts/Base.astro';
+import Icono from '../components/Icono.astro';
+import Juncos from '../components/Juncos.astro';
+import sitio from '../data/sitio.json';
+import programas from '../data/programas.json';
+import especies from '../data/especies.json';
+import salidas from '../data/salidas.json';
+import faq from '../data/faq.json';
+import { wa, precio, fechaPartes } from '../lib/util';
+
+const vitrina = [...programas].sort((a, b) => Number(b.destacado) - Number(a.destacado)).slice(0, 3);
+
+// curvas de nivel para el mapa del río
+let sem = 5;
+const rnd = () => ((sem = (sem * 16807) % 2147483647) / 2147483647);
+const curvas = Array.from({ length: 7 }, (_, k) => {
+  const cx = 820 + rnd() * 120, cy = 90 + rnd() * 60;
+  return Array.from({ length: 5 }, (_, j) => {
+    const r = 40 + j * 38 + k * 6;
+    const pts = Array.from({ length: 24 }, (_, i) => {
+      const a = (i / 24) * Math.PI * 2;
+      const rr = r * (1 + 0.18 * Math.sin(a * 3 + k) + 0.08 * Math.sin(a * 5 + j));
+      return `${(cx - k * 120 + Math.cos(a) * rr * 1.6).toFixed(1)},${(cy + k * 40 + Math.sin(a) * rr).toFixed(1)}`;
+    });
+    return 'M' + pts.join(' L') + 'Z';
+  });
+}).flat();
+const puntos = [
+  { id: 'villarrica', x: 905, y: 128, t: 'Lago Villarrica', d: 'Aquí nace el Toltén. Agua fría y clara que baja desde la cordillera.' },
+  { id: 'pitrufquen', x: 575, y: 262, t: 'Tramo medio', d: 'Correderas, pozones y orillas con troncos. Nuestro tramo de flotada.' },
+  { id: 'mahuidanche', x: 400, y: 318, t: 'Río Mahuidanche', d: 'Afluente de aguas tranquilas y acceso privado. Truchas grandes y desconfiadas.' },
+  { id: 'mar', x: 92, y: 300, t: 'Desembocadura', d: 'Por aquí entra el chinook desde el mar cuando sube a desovar.' },
+];
+const llevar = ['Lentes polarizados', 'Ropa por capas', 'Parka de lluvia', 'Gorro y bloqueador', 'Muda de ropa seca', 'Licencia de pesca'];
+---
+<Base inicio>
+  <canvas id="agua" class="fixed inset-0 z-0 h-svh w-full" aria-hidden="true"></canvas>
+
+  <main class="relative z-10">
+    <!-- PORTADA -->
+    <section id="inicio" class="gutter relative flex min-h-svh flex-col overflow-hidden">
+      <div class="juncos pointer-events-none absolute inset-x-0 bottom-0 h-[38vh]" data-vel="0.5"><Juncos class="h-full w-full" semilla={3} /></div>
+      <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col pt-28 pb-10 md:justify-center md:pt-24">
+        <div class="portada-texto max-w-2xl">
+          <p class="inline-flex items-center gap-2 rounded-full border border-ambar/40 bg-abismo/50 px-3 py-1.5 text-sm font-semibold text-ambar backdrop-blur"><span class="size-2 animate-pulse rounded-full bg-ambar"></span>{sitio.apertura}</p>
+          <h1 class="mt-6">
+            <span class="titulo block text-[clamp(3.4rem,10vw,8.5rem)]">Pesca guiada</span>
+            <span class="acento -mt-1 block text-[clamp(2.6rem,7vw,5.6rem)] leading-none text-ambar">en el río Toltén</span>
+          </h1>
+          <p class="mt-6 max-w-md text-lg text-niebla md:text-xl">Flotadas en bote, mosca y spinning en el Toltén, el Mahuidanche y afluentes de acceso exclusivo.</p>
+        </div>
+        <div class="portada-botones mt-auto flex flex-col gap-3 pt-8 sm:flex-row md:mt-10">
+          <a href="#programas" class="boton boton-ambar"><Icono n="bote" /> Ver programas</a>
+          <a href="#reservar" class="boton boton-linea"><Icono n="calendario" /> Reservar salida</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROGRAMAS (vitrina) -->
+    <section id="programas" class="gutter relative bg-rio py-24 md:py-32">
+      <div class="mx-auto max-w-7xl">
+        <div class="flex flex-col gap-6 md:flex-row md:items-end md:justify-between" data-sube>
+          <div>
+            <h2 class="titulo text-6xl md:text-8xl">Programas <span class="acento text-ambar">de pesca</span></h2>
+            <p class="mt-4 max-w-lg text-niebla">Elige cuánto tiempo quieres estar en el agua. Todos incluyen guía, equipo y captura y suelta.</p>
+          </div>
+          <a href="/programas" class="boton boton-ambar self-start md:self-auto">Ver todos los programas <Icono n="flecha" /></a>
+        </div>
+        <div class="mt-12 grid gap-6 lg:grid-cols-3">
+          {vitrina.map((p) => (
+            <article class={`panel relative flex flex-col rounded-2xl p-7 ${p.destacado ? 'ring-1 ring-ambar/60' : ''}`} data-sube>
+              {p.destacado && <span class="absolute -top-3 left-7 rounded-md bg-ambar px-3 py-1 text-xs font-bold text-abismo">El más pedido</span>}
+              <h3 class="titulo text-4xl">{p.nombre}</h3>
+              <div class="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-sm text-niebla">
+                <span class="flex items-center gap-1.5"><Icono n="reloj" class="size-4" /> {p.duracion}</span>
+                <span class="flex items-center gap-1.5"><Icono n="personas" class="size-4" /> {p.personas}</span>
+              </div>
+              <p class="mt-4 text-niebla">{p.resumen}</p>
+              <ul class="mt-5 flex-1 space-y-2 text-sm">
+                {p.incluye.slice(0, 4).map((x) => <li class="flex items-center gap-2"><Icono n="check" class="size-4 text-oliva" /> {x}</li>)}
+              </ul>
+              <p class="mt-6 text-sm text-niebla">Desde <span class="titulo text-4xl text-espuma">{precio(p.precio)}</span> {p.unidad}</p>
+              <div class="mt-5 grid grid-cols-2 gap-3">
+                <a href={`/programas#${p.id}`} class="boton boton-linea !px-3 text-sm">Ver detalle</a>
+                <button type="button" class="reservar-programa boton boton-ambar !px-3 text-sm" data-programa={p.nombre}>Reservar</button>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- ESPECIES: el pez cambia con el scroll -->
+    <section id="especies" class="relative h-[420vh]">
+      <div class="gutter sticky top-0 flex h-svh flex-col overflow-hidden">
+        <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col pt-24 pb-8 md:pt-28">
+          <h2 class="titulo text-5xl md:text-7xl">Lo que vas <span class="acento text-ambar">a pescar</span></h2>
+          <ol class="mt-4 flex gap-2" aria-label="Especies">
+            {especies.map((e, i) => <li class="punto-especie h-1.5 w-10 rounded-full bg-espuma/20 transition-colors" data-i={i}><span class="sr-only">{e.nombre}</span></li>)}
+          </ol>
+          <div class="relative mt-auto md:mt-0 md:flex md:flex-1 md:items-center">
+            {especies.map((e, i) => (
+              <article class="ficha panel absolute inset-x-0 bottom-0 rounded-2xl p-5 opacity-0 md:relative md:inset-auto md:col-start-1 md:row-start-1 md:max-w-sm md:p-7" data-i={i} aria-hidden={i > 0}>
+                <h3 class="titulo text-4xl md:text-5xl">{e.nombre}</h3>
+                <p class="acento text-lg text-niebla">{e.cientifico}</p>
+                <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div><dt class="text-niebla">Tamaño</dt><dd class="font-semibold">{e.tamano}</dd></div>
+                  <div><dt class="text-niebla">Peso</dt><dd class="font-semibold">{e.peso}</dd></div>
+                  <div class="col-span-2"><dt class="text-niebla">Técnica</dt><dd class="font-semibold">{e.tecnica}</dd></div>
+                  <div class="col-span-2 hidden md:block"><dt class="text-niebla">Mejor época</dt><dd class="font-semibold text-ambar">{e.mejor}</dd></div>
+                </dl>
+                <p class="mt-4 hidden text-niebla md:block">{e.dato}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOS RÍOS: mapa que se dibuja con el scroll -->
+    <section id="rios" class="relative h-[260vh] bg-abismo">
+      <div class="gutter sticky top-0 flex h-svh flex-col overflow-hidden">
+        <div class="mx-auto w-full max-w-7xl pt-24 md:pt-28">
+          <h2 class="titulo text-5xl md:text-7xl">Del lago <span class="acento text-ambar">al mar</span></h2>
+          <p class="mt-3 max-w-md text-niebla">El Toltén nace en el lago Villarrica y corre 123 km hasta el Pacífico. Pescamos sus mejores tramos y afluentes.</p>
+        </div>
+        <div class="relative mx-auto mt-4 w-full max-w-7xl flex-1 overflow-hidden md:overflow-visible">
+          <div id="mapa" class="absolute inset-y-0 right-0 w-[280%] md:inset-x-0 md:w-auto">
+          <svg viewBox="0 0 1000 500" class="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <g fill="none" stroke="#9db5ad" stroke-opacity="0.09">{curvas.map((d) => <path d={d} />)}</g>
+            <path d="M0 260 Q40 270 30 330 Q20 400 0 430" fill="none" stroke="#2f7a72" stroke-opacity="0.35" stroke-width="2" stroke-dasharray="4 6" />
+            <text x="18" y="470" fill="#9db5ad" fill-opacity="0.45" font-size="13" letter-spacing="3">OCÉANO PACÍFICO</text>
+            <ellipse cx="935" cy="110" rx="60" ry="34" fill="#12393c" stroke="#2f7a72" />
+            <path id="rio-principal" class="trazo" d="M905 128 C860 150 820 140 780 170 S700 230 660 220 S600 250 575 262 S500 300 460 295 S420 312 400 318 S320 290 270 310 S180 350 140 320 S100 300 30 300" fill="none" stroke="#f2a548" stroke-width="4" stroke-linecap="round" />
+            <path id="rio-afluente" class="trazo" d="M470 470 C460 430 420 420 430 380 S400 340 400 318" fill="none" stroke="#f2a548" stroke-opacity="0.75" stroke-width="2.5" stroke-linecap="round" />
+            {puntos.map((p) => (
+              <g class="marca-rio" data-id={p.id} style="opacity:0">
+                <circle cx={p.x} cy={p.y} r="16" fill="#f2a548" fill-opacity="0.18" />
+                <circle cx={p.x} cy={p.y} r="6" fill="#f2a548" />
+              </g>
+            ))}
+          </svg>
+          {puntos.map((p) => (
+            <div class={`nota-rio panel absolute hidden w-52 rounded-xl p-4 opacity-0 md:block md:w-64 ${p.id === 'mahuidanche' ? 'nota-abajo' : 'nota-arriba'}`} data-id={p.id} style={`--x:${p.x / 10}%; --y:${p.y / 5}%`}>
+              <p class="titulo text-2xl text-ambar">{p.t}</p>
+              <p class="mt-1 text-sm text-niebla">{p.d}</p>
+            </div>
+          ))}
+          </div>
+          <div id="nota-movil" class="panel absolute inset-x-0 bottom-4 rounded-xl p-4 opacity-0 transition-opacity md:hidden" aria-hidden="true"></div>
+          <ul class="sr-only">{puntos.map((p) => <li>{p.t}: {p.d}</li>)}</ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- SALIDAS -->
+    <section id="salidas" class="gutter relative bg-rio py-24 md:py-32">
+      <div class="mx-auto max-w-7xl">
+        <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between" data-sube>
+          <div>
+            <h2 class="titulo text-6xl md:text-8xl">Próximas <span class="acento text-ambar">salidas</span></h2>
+            <p class="mt-4 max-w-lg text-niebla">Fechas con cupos abiertos. Si ninguna te acomoda, escríbenos y armamos tu salida.</p>
+          </div>
+          <a href={sitio.instagram} target="_blank" rel="noopener" class="inline-flex items-center gap-2 text-sm font-bold text-ambar hover:underline"><Icono n="instagram" class="size-4" /> Fotos de las salidas</a>
+        </div>
+        <ol class="mt-12 grid gap-4 md:grid-cols-2">
+          {salidas.map((s) => {
+            const f = fechaPartes(s.fecha);
+            return (
+              <li class="salida panel flex flex-col gap-5 rounded-2xl p-5 sm:flex-row sm:items-center md:p-6" data-fecha={s.fecha}>
+                <div class="flex shrink-0 items-baseline gap-2 sm:w-20 sm:flex-col sm:items-center sm:gap-0">
+                  <span class="titulo text-6xl text-ambar">{f.dia}</span>
+                  <span class="text-sm font-bold tracking-[0.2em] text-niebla">{f.mes.toUpperCase()}</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm text-oliva">{f.semana}, {s.programa.toLowerCase()}</p>
+                  <h3 class="titulo mt-1 text-3xl">{s.titulo}</h3>
+                  <p class="mt-1 text-sm text-niebla">{s.detalle}</p>
+                  <p class="mt-3 flex items-center gap-2 text-sm">
+                    <span class="flex gap-1" aria-hidden="true">{Array.from({ length: Math.min(s.cupos, 10) }, () => <span class="size-2 rounded-full bg-ambar"></span>)}</span>
+                    {s.cupos} {s.cupos === 1 ? 'cupo' : 'cupos'}
+                  </p>
+                </div>
+                <button type="button" class="reservar-salida boton boton-linea shrink-0" data-fecha={s.fecha} data-titulo={s.titulo} data-programa={s.programa}>Reservar cupo</button>
+              </li>
+            );
+          })}
+        </ol>
+        <p id="sin-salidas" class="mt-8 hidden text-niebla">Estamos armando el calendario. Escríbenos y te avisamos.</p>
+      </div>
+    </section>
+
+    <!-- RESERVAR -->
+    <section id="reservar" class="gutter relative overflow-hidden bg-abismo py-24 md:py-32">
+      <div class="relative mx-auto grid max-w-7xl gap-12 lg:grid-cols-[0.85fr_1.15fr]">
+        <div data-sube>
+          <h2 class="titulo text-6xl md:text-8xl">Reserva <span class="acento text-ambar">tu salida</span></h2>
+          <p class="mt-4 max-w-md text-niebla">Llena lo que sepas y te abrimos WhatsApp con todo escrito. Lo envías y coordinamos el resto con el guía.</p>
+          <ul class="mt-10 grid gap-6">
+            <li class="flex gap-4"><span class="grid size-11 shrink-0 place-items-center rounded-lg bg-ambar/12 text-ambar"><Icono n="pez" /></span><div><p class="font-semibold">Captura y suelta</p><p class="text-sm text-niebla">Medimos, foto y de vuelta al agua.</p></div></li>
+            <li class="flex gap-4"><span class="grid size-11 shrink-0 place-items-center rounded-lg bg-ambar/12 text-ambar"><Icono n="ola" /></span><div><p class="font-semibold">Si el río no da, reprogramamos</p><p class="text-sm text-niebla">Con crecidas o riesgo, cambiamos la fecha sin costo.</p></div></li>
+            <li class="flex gap-4"><span class="grid size-11 shrink-0 place-items-center rounded-lg bg-ambar/12 text-ambar"><Icono n="idea" /></span><div><p class="font-semibold">¿Sin licencia de pesca?</p><p class="text-sm text-niebla">Se saca en línea en Sernapesca. Te ayudamos a hacerlo.</p></div></li>
+          </ul>
+        </div>
+
+        <form id="form-reserva" class="panel grid gap-5 rounded-2xl p-6 md:p-9" novalidate data-sube>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <div class="sm:col-span-2">
+              <label class="etiqueta-campo" for="r-nombre">Nombre</label>
+              <input id="r-nombre" name="nombre" class="campo" autocomplete="name" required placeholder="¿Cómo te llamas?" />
+            </div>
+            <div class="sm:col-span-2">
+              <label class="etiqueta-campo" for="r-programa">Programa</label>
+              <select id="r-programa" name="programa" class="campo">
+                {programas.map((p) => <option value={p.nombre} selected={p.destacado}>{p.nombre} (desde {precio(p.precio)})</option>)}
+                <option value="Evento">Evento o salida especial</option>
+                <option value="No sé, ayúdenme a elegir">No sé, ayúdenme a elegir</option>
+              </select>
+            </div>
+            <div>
+              <label class="etiqueta-campo" for="r-fecha">Fecha</label>
+              <input id="r-fecha" name="fecha" type="date" class="campo" required />
+            </div>
+            <div>
+              <label class="etiqueta-campo" for="r-personas">Personas</label>
+              <select id="r-personas" name="personas" class="campo">{Array.from({ length: 6 }, (_, i) => <option selected={i === 1}>{i + 1}</option>)}<option>Más de 6</option></select>
+            </div>
+          </div>
+          <fieldset>
+            <legend class="etiqueta-campo">¿Cuánto has pescado?</legend>
+            <div class="grid grid-cols-3 gap-2">
+              {['Nunca', 'Un poco', 'Harto'].map((x, i) => <label class="chip"><input type="radio" name="experiencia" value={x} checked={i === 1} class="sr-only" /><span>{x}</span></label>)}
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend class="etiqueta-campo">Modalidad</legend>
+            <div class="grid grid-cols-3 gap-2">
+              {['Mosca', 'Spinning', 'Da igual'].map((x, i) => <label class="chip"><input type="radio" name="modalidad" value={x} checked={i === 2} class="sr-only" /><span>{x}</span></label>)}
+            </div>
+          </fieldset>
+          <div class="grid gap-5 sm:grid-cols-2">
+            <fieldset>
+              <legend class="etiqueta-campo">Equipo</legend>
+              <div class="grid grid-cols-2 gap-2">
+                {['Lo ponen ustedes', 'Llevo el mío'].map((x, i) => <label class="chip"><input type="radio" name="equipo" value={x} checked={i === 0} class="sr-only" /><span class="!text-sm">{x}</span></label>)}
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend class="etiqueta-campo">Licencia de pesca</legend>
+              <div class="grid grid-cols-2 gap-2">
+                {['Ya la tengo', 'Me falta'].map((x, i) => <label class="chip"><input type="radio" name="licencia" value={x} checked={i === 1} class="sr-only" /><span class="!text-sm">{x}</span></label>)}
+              </div>
+            </fieldset>
+          </div>
+          <div>
+            <label class="etiqueta-campo" for="r-nota">Comentarios <span class="font-normal text-niebla/70">(opcional)</span></label>
+            <textarea id="r-nota" name="nota" rows="3" class="campo resize-y" placeholder="Edades si van niños, especie que quieres buscar, alojamiento..."></textarea>
+          </div>
+          <p id="r-error" class="hidden text-sm text-salmon" role="alert"></p>
+          <button class="boton boton-ambar w-full"><Icono n="whatsapp" /> Enviar reserva por WhatsApp</button>
+          <p id="r-ok" class="hidden text-center text-sm text-oliva" role="status">Listo, se abrió WhatsApp con tu reserva. Envíala y te confirmamos.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- EQUIPO Y TIENDA -->
+    <section id="equipo" class="gutter relative bg-musgo py-24 md:py-28">
+      <div class="mx-auto grid max-w-7xl gap-6 lg:grid-cols-2">
+        <article class="panel rounded-2xl p-7 md:p-10" data-sube>
+          <span class="grid size-12 place-items-center rounded-lg bg-ambar/15 text-ambar"><Icono n="bolsa" class="size-6" /></span>
+          <h2 class="titulo mt-5 text-5xl">Equípate en <span class="acento text-ambar">{sitio.tienda.nombre}</span></h2>
+          <p class="mt-3 text-niebla">{sitio.tienda.detalle}</p>
+          <a href={sitio.instagram} target="_blank" rel="noopener" class="boton boton-linea mt-6">Ver la promo en Instagram</a>
+        </article>
+        <article class="panel rounded-2xl p-7 md:p-10" data-sube>
+          <span class="grid size-12 place-items-center rounded-lg bg-ambar/15 text-ambar"><Icono n="cana" class="size-6" /></span>
+          <h2 class="titulo mt-5 text-5xl">Qué <span class="acento text-ambar">llevar</span></h2>
+          <p class="mt-3 text-niebla">El equipo de pesca, el bote y los chalecos los ponemos nosotros. Tú trae esto:</p>
+          <ul class="mt-6 grid gap-3 sm:grid-cols-2">
+            {llevar.map((x) => <li class="flex items-center gap-3"><span class="grid size-6 place-items-center rounded-md bg-oliva/25 text-oliva"><Icono n="check" class="size-4" /></span>{x}</li>)}
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <!-- PREGUNTAS -->
+    <section id="preguntas" class="gutter relative bg-rio py-24 md:py-32">
+      <div class="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+        <div data-sube>
+          <h2 class="titulo text-6xl md:text-8xl">Antes <span class="acento text-ambar">de salir</span></h2>
+          <p class="mt-4 max-w-sm text-niebla">Lo que más nos preguntan. Si te queda alguna duda, escríbenos.</p>
+          <a href={wa('Hola, tengo una pregunta sobre las salidas de pesca')} target="_blank" rel="noopener" class="boton boton-linea mt-8"><Icono n="whatsapp" /> Hacer una pregunta</a>
+        </div>
+        <div class="grid gap-3" data-sube>
+          {faq.map((f) => (
+            <details class="pregunta panel rounded-xl">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-6 py-5 font-semibold">{f.p}<span class="mas grid size-8 shrink-0 place-items-center rounded-md text-ambar">+</span></summary>
+              <p class="px-6 pb-5 text-niebla">{f.r}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACTO Y PUNTO DE ENCUENTRO -->
+    <section id="contacto" class="gutter relative bg-abismo py-24 md:py-32">
+      <div class="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-center">
+        <div data-sube>
+          <h2 class="titulo text-6xl md:text-8xl">Nos vemos <span class="acento text-ambar">en el río</span></h2>
+          <p class="mt-6 flex items-start gap-3 text-lg"><Icono n="pin" class="mt-1 size-6 shrink-0 text-ambar" /> {sitio.encuentro}, {sitio.region}.</p>
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a href={wa('Hola, quiero consultar por una salida de pesca')} target="_blank" rel="noopener" class="boton boton-ambar"><Icono n="whatsapp" /> Escribir por WhatsApp</a>
+            <a href={sitio.instagram} target="_blank" rel="noopener" class="boton boton-linea"><Icono n="instagram" /> @toltenfishingtours</a>
+          </div>
+        </div>
+        <div class="overflow-hidden rounded-2xl border border-niebla/20" data-sube>
+          <iframe src={sitio.mapaEmbed} title="Mapa del río Toltén" loading="lazy" referrerpolicy="no-referrer-when-downgrade" class="mapa h-[22rem] w-full md:h-[26rem]"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .trazo { stroke-dasharray: var(--l, 2000); stroke-dashoffset: var(--l, 2000); }
+  .nota-rio { left: var(--x); top: var(--y); transform: translate(-50%, calc(-100% - 22px)); }
+  .nota-abajo { transform: translate(-50%, 22px); }
+  .ficha { transition: opacity 0.5s, transform 0.5s; transform: translateY(16px); }
+  .ficha.activa { opacity: 1; transform: none; }
+  @media (min-width: 768px) { .ficha { position: absolute; top: 50%; translate: 0 -50%; } }
+  .punto-especie.activo { background: var(--color-ambar); }
+  .pregunta summary::-webkit-details-marker { display: none; }
+  .pregunta .mas { background: rgb(242 165 72 / 0.12); font-size: 1.3rem; transition: transform 0.3s; }
+  .pregunta[open] .mas { transform: rotate(45deg); }
+  .pregunta[open] { border-color: rgb(242 165 72 / 0.45); }
+  .mapa { filter: grayscale(0.3) hue-rotate(-10deg) brightness(0.85) contrast(1.05); }
+</style>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { crearTrucha } from '../lib/trucha';
+  import { wa } from '../lib/util';
+  import sitio from '../data/sitio.json';
+  import especies from '../data/especies.json';
+  gsap.registerPlugin(ScrollTrigger);
+
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const movil = () => innerWidth < 768;
+  const clamp = gsap.utils.clamp(0, 1);
+
+  // ---------- Trucha 3D ----------
+  const pez = crearTrucha(document.getElementById('agua') as HTMLCanvasElement, especies.map((e) => e.modelo));
+  const poseHero = () => (movil() ? { x: 0.52, y: 0.6, escala: 1.35, giro: -0.3, inclinar: 0.1 } : { x: 0.7, y: 0.52, escala: 1.25, giro: -0.35, inclinar: 0.08 });
+  const poseEspecies = () => (movil() ? { x: 0.52, y: 0.42, escala: 1.08, giro: -0.15, inclinar: 0.05 } : { x: 0.64, y: 0.52, escala: 1.25, giro: -0.15, inclinar: 0.05 });
+  Object.assign(pez.pose, poseHero());
+
+  ScrollTrigger.create({
+    trigger: '#inicio', start: 'top top', end: 'bottom top',
+    onUpdate: (st) => {
+      if (st.progress >= 1) return;
+      const b = poseHero();
+      Object.assign(pez.pose, b);
+      pez.pose.y = b.y - st.progress * 0.25;
+      pez.pose.giro = b.giro - st.progress * 0.6;
+      pez.especie = 0;
+    },
+  });
+
+  const fichas = [...document.querySelectorAll<HTMLElement>('.ficha')];
+  const puntosEsp = [...document.querySelectorAll<HTMLElement>('.punto-especie')];
+  let fichaActual = -1;
+  ScrollTrigger.create({
+    trigger: '#especies', start: 'top bottom', end: 'bottom bottom',
+    onUpdate: (st) => {
+      const total = 4.2; // alto de la sección en pantallas
+      const p = clamp((st.progress * total - 1) / (total - 1));
+      Object.assign(pez.pose, poseEspecies());
+      // tres tramos con pausa en cada especie
+      const e = p < 0.28 ? 0 : p < 0.38 ? (p - 0.28) / 0.1 : p < 0.62 ? 1 : p < 0.72 ? 1 + (p - 0.62) / 0.1 : 2;
+      pez.especie = e;
+      const idx = Math.round(e);
+      if (idx !== fichaActual) {
+        fichaActual = idx;
+        fichas.forEach((f, i) => { f.classList.toggle('activa', i === idx); f.setAttribute('aria-hidden', String(i !== idx)); });
+        puntosEsp.forEach((d, i) => d.classList.toggle('activo', i <= idx));
+      }
+    },
+  });
+
+  let enHero = true, enEsp = false;
+  const actualizar = () => pez.activo(enHero || enEsp);
+  ScrollTrigger.create({ trigger: '#inicio', start: 'top bottom', end: 'bottom top', onToggle: (s) => { enHero = s.isActive; actualizar(); } });
+  ScrollTrigger.create({ trigger: '#especies', start: 'top bottom', end: 'bottom top', onToggle: (s) => { enEsp = s.isActive; actualizar(); } });
+  addEventListener('resize', () => ScrollTrigger.refresh());
+
+  // ---------- Mapa del río ----------
+  const principal = document.getElementById('rio-principal') as unknown as SVGPathElement;
+  const afluente = document.getElementById('rio-afluente') as unknown as SVGPathElement;
+  const L1 = principal.getTotalLength(), L2 = afluente.getTotalLength();
+  principal.style.setProperty('--l', String(L1)); afluente.style.setProperty('--l', String(L2));
+  const marcas = Object.fromEntries([...document.querySelectorAll<SVGGElement>('.marca-rio')].map((m) => [m.dataset.id, m]));
+  const notas = [...document.querySelectorAll<HTMLElement>('.nota-rio')];
+  const mapa = document.getElementById('mapa')!;
+  const notaMovil = document.getElementById('nota-movil')!;
+  // en qué punto del trazo aparece cada marca
+  const umbral: Record<string, number> = { villarrica: 0.02, pitrufquen: 0.4, mahuidanche: 0.62, mar: 0.97 };
+  if (movil()) principal.style.strokeWidth = '6';
+  ScrollTrigger.create({
+    trigger: '#rios', start: 'top top', end: 'bottom bottom',
+    onUpdate: (st) => {
+      const p = clamp(st.progress / 0.85);
+      const pr = clamp(p / 0.8);
+      principal.style.strokeDashoffset = String(L1 * (1 - pr));
+      afluente.style.strokeDashoffset = String(L2 * (1 - clamp((p - 0.5) / 0.2)));
+      let ultima = '';
+      for (const [id, u] of Object.entries(umbral)) {
+        const on = (id === 'mahuidanche' ? clamp((p - 0.5) / 0.2) >= 1 : pr >= u);
+        marcas[id].style.opacity = on ? '1' : '0';
+        if (on) ultima = id;
+      }
+      notas.forEach((n) => (n.style.opacity = movil() ? (n.dataset.id === ultima ? '1' : '0') : marcas[n.dataset.id!].style.opacity));
+      // en teléfono el mapa es más ancho que la pantalla y se desliza siguiendo el trazo
+      if (movil()) {
+        const n = notas.find((x) => x.dataset.id === ultima);
+        if (n && notaMovil.dataset.id !== ultima) { notaMovil.innerHTML = n.innerHTML; notaMovil.dataset.id = ultima; }
+        notaMovil.style.opacity = n ? '1' : '0';
+        const sobra = mapa.offsetWidth - mapa.parentElement!.offsetWidth;
+        mapa.style.transform = `translateX(${sobra * pr}px)`;
+      } else mapa.style.transform = '';
+    },
+  });
+  notas.forEach((n) => (n.style.transition = 'opacity 0.4s'));
+
+  // ---------- Entrada de la portada y parallax ----------
+  if (!quieto) {
+    gsap.to('.juncos', { yPercent: 25, ease: 'none', scrollTrigger: { trigger: '#inicio', start: 'top top', end: 'bottom top', scrub: true } });
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.from('.portada-texto > *', { y: 50, opacity: 0, duration: 1.1, stagger: 0.12 })
+      .from('.portada-texto h1 > span', { yPercent: 40, opacity: 0, duration: 1, stagger: 0.1 }, 0.1)
+      .from('.portada-botones > *', { y: 20, opacity: 0, duration: 0.8, stagger: 0.1 }, '-=0.6')
+      .from('.juncos', { yPercent: 40, duration: 1.8 }, 0);
+  }
+
+  // ---------- Salidas pasadas fuera ----------
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  let visibles = 0;
+  document.querySelectorAll<HTMLElement>('.salida').forEach((e) => {
+    const [a, m, d] = e.dataset.fecha!.split('-').map(Number);
+    if (new Date(a, m - 1, d) < hoy) e.remove(); else visibles++;
+  });
+  if (!visibles) document.getElementById('sin-salidas')!.classList.remove('hidden');
+
+  // ---------- Reserva ----------
+  const fr = document.getElementById('form-reserva') as HTMLFormElement;
+  const fecha = fr.querySelector<HTMLInputElement>('#r-fecha')!;
+  const prog = fr.querySelector<HTMLSelectElement>('#r-programa')!;
+  const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  fecha.min = iso(hoy);
+  let salidaElegida = '';
+  const irA = (sel: string) => { const l = (window as any).lenis; l ? l.scrollTo(sel, { offset: -80 }) : document.querySelector(sel)!.scrollIntoView({ behavior: 'smooth' }); };
+  const elegirPrograma = (nombre: string) => { const op = [...prog.options].find((o) => o.value === nombre); prog.value = op ? nombre : 'Evento'; };
+
+  document.querySelectorAll<HTMLButtonElement>('.reservar-salida').forEach((b) => b.addEventListener('click', () => {
+    fecha.value = b.dataset.fecha!; salidaElegida = b.dataset.titulo!; elegirPrograma(b.dataset.programa!);
+    irA('#reservar'); setTimeout(() => fr.querySelector<HTMLInputElement>('#r-nombre')!.focus({ preventScroll: true }), 900);
+  }));
+  document.querySelectorAll<HTMLButtonElement>('.reservar-programa').forEach((b) => b.addEventListener('click', () => {
+    elegirPrograma(b.dataset.programa!); irA('#reservar');
+  }));
+  fecha.addEventListener('change', () => (salidaElegida = ''));
+  const param = new URLSearchParams(location.search).get('programa');
+  if (param) elegirPrograma(param);
+
+  const fechaLarga = (v: string) => { const [a, m, d] = v.split('-').map(Number); return new Date(a, m - 1, d).toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' }); };
+  fr.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const d = new FormData(fr);
+    const err = document.getElementById('r-error')!;
+    const nombre = String(d.get('nombre') || '').trim();
+    const f = String(d.get('fecha') || '');
+    if (!nombre || !f) {
+      err.textContent = !nombre ? 'Falta tu nombre.' : 'Elige la fecha de la salida.';
+      err.classList.remove('hidden'); (fr.querySelector(!nombre ? '#r-nombre' : '#r-fecha') as HTMLElement).focus(); return;
+    }
+    err.classList.add('hidden');
+    const l = [
+      'Hola, quiero reservar una salida de pesca:',
+      `Nombre: ${nombre}`,
+      `Programa: ${d.get('programa')}`,
+      `Fecha: ${fechaLarga(f)}${salidaElegida ? ` (${salidaElegida})` : ''}`,
+      `Personas: ${d.get('personas')}`,
+      `Experiencia: ${d.get('experiencia')}`,
+      `Modalidad: ${d.get('modalidad')}`,
+      `Equipo: ${d.get('equipo')}`,
+      `Licencia: ${d.get('licencia')}`,
+    ];
+    const nota = String(d.get('nota') || '').trim(); if (nota) l.push(`Comentarios: ${nota}`);
+    window.open(wa(l.join('\n'), sitio.whatsapp), '_blank', 'noopener');
+    document.getElementById('r-ok')!.classList.remove('hidden');
+  });
+</script>

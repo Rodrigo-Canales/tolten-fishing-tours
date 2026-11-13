@@ -1,0 +1,64 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/big-shoulders-display';
+@import '@fontsource-variable/figtree';
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+
+@theme {
+  --color-abismo: #061416;
+  --color-rio: #0d2b2f;
+  --color-poza: #12393c;
+  --color-musgo: #1e3a2b;
+  --color-oliva: #8a9a4a;
+  --color-ambar: #f2a548;
+  --color-salmon: #ef8f7a;
+  --color-espuma: #eaf0e6;
+  --color-niebla: #9db5ad;
+
+  --font-display: 'Big Shoulders Display Variable', 'Arial Narrow', Impact, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-sans: 'Figtree Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+:root { color-scheme: dark; }
+html { background: var(--color-abismo); }
+body { background: var(--color-abismo); color: var(--color-espuma); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+h1, h2, h3 { text-wrap: balance; }
+
+.gutter { padding-left: max(1.25rem, env(safe-area-inset-left, 0px)); padding-right: max(1.25rem, env(safe-area-inset-right, 0px)); }
+@media (min-width: 768px) { .gutter { padding-left: max(2.5rem, env(safe-area-inset-left, 0px)); padding-right: max(2.5rem, env(safe-area-inset-right, 0px)); } }
+
+.titulo { font-family: var(--font-display); font-weight: 800; text-transform: uppercase; line-height: 0.88; letter-spacing: 0.01em; }
+.acento { font-family: var(--font-serif); font-style: italic; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+.panel { background: linear-gradient(165deg, rgb(18 57 60 / 0.75), rgb(6 20 22 / 0.85)); border: 1px solid rgb(157 181 173 / 0.18); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
+
+:focus-visible { outline: 2px solid var(--color-ambar); outline-offset: 3px; }
+
+.campo { width: 100%; min-height: 3rem; border-radius: 0.6rem; padding: 0.75rem 1rem; background: rgb(6 20 22 / 0.7); border: 1px solid rgb(157 181 173 / 0.28); color: var(--color-espuma); transition: border-color 0.2s, box-shadow 0.2s; }
+.campo:focus { outline: none; border-color: var(--color-ambar); box-shadow: 0 0 0 3px rgb(242 165 72 / 0.18); }
+.campo::placeholder { color: rgb(157 181 173 / 0.6); }
+select.campo { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--color-ambar) 50%), linear-gradient(135deg, var(--color-ambar) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 14px) 50%; background-size: 6px 6px; background-repeat: no-repeat; padding-right: 2.5rem; }
+input[type='date'].campo::-webkit-calendar-picker-indicator { filter: invert(0.8) sepia(1) saturate(3) hue-rotate(-10deg); }
+.etiqueta-campo { display: block; font-size: 0.82rem; font-weight: 600; color: var(--color-niebla); margin-bottom: 0.4rem; }
+
+.chip { cursor: pointer; }
+.chip span { display: flex; align-items: center; justify-content: center; min-height: 2.75rem; padding: 0 1rem; border-radius: 0.6rem; border: 1px solid rgb(157 181 173 / 0.3); font-size: 0.9rem; text-align: center; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.chip:hover span { border-color: rgb(242 165 72 / 0.7); }
+.chip input:checked + span { background: var(--color-ambar); color: #1d1206; border-color: var(--color-ambar); font-weight: 700; }
+.chip input:focus-visible + span { outline: 2px solid var(--color-ambar); outline-offset: 2px; }
+
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+
+/* en capa de componentes para que hidden, sm:inline-flex, etc. puedan sobreescribirlos */
+@layer components {
+  .boton { display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; min-height: 3rem; padding: 0 1.5rem; border-radius: 0.6rem; font-weight: 700; font-size: 0.95rem; transition: transform 0.25s, background 0.25s, color 0.25s, box-shadow 0.25s; }
+  .boton-ambar { background: var(--color-ambar); color: #1d1206; box-shadow: 0 10px 28px -12px rgb(242 165 72 / 0.7); }
+  .boton-ambar:hover { transform: translateY(-2px); background: #f7b866; }
+  .boton-linea { border: 1px solid rgb(234 240 230 / 0.35); color: var(--color-espuma); }
+  .boton-linea:hover { background: rgb(234 240 230 / 0.08); border-color: var(--color-espuma); }
+}

@@ -1,0 +1,17 @@
+{
+  "nombre": "Toltén Fishing Tours",
+  "eslogan": "Pesca guiada en el río Toltén y afluentes exclusivos",
+  "whatsapp": "56900000000",
+  "telefonoVisible": "+56 9 0000 0000",
+  "instagram": "https://www.instagram.com/toltenfishingtours/",
+  "region": "Región de La Araucanía",
+  "encuentro": "Punto de encuentro a coordinar en la ribera del Toltén",
+  "mapa": "https://www.google.com/maps/search/?api=1&query=R%C3%ADo+Tolt%C3%A9n",
+  "mapaEmbed": "https://www.google.com/maps?q=R%C3%ADo+Tolt%C3%A9n,+Araucan%C3%ADa&output=embed",
+  "temporada": "Segundo viernes de noviembre al primer domingo de mayo",
+  "tienda": {
+    "nombre": "Brisas del Toltén",
+    "detalle": "Compra tu equipo en Brisas del Toltén y participa por un programa de pesca guiada para disfrutar con tu familia o amigos."
+  },
+  "apertura": "Temporada abierta desde el viernes 13 de noviembre"
+}

@@ -1,0 +1,55 @@
+---
+import Base from '../layouts/Base.astro';
+import Icono from '../components/Icono.astro';
+import Juncos from '../components/Juncos.astro';
+import programas from '../data/programas.json';
+import sitio from '../data/sitio.json';
+import { precio, wa } from '../lib/util';
+---
+<Base titulo={`Programas | ${sitio.nombre}`} descripcion={`Programas de pesca guiada en el río Toltén: medio día, día completo, afluentes exclusivos e iniciación al fly fishing.`}>
+  <main>
+    <section class="gutter relative overflow-hidden bg-[linear-gradient(180deg,#12393c,#061416)] pt-32 pb-24 md:pt-40">
+      <div class="pointer-events-none absolute inset-x-0 bottom-0 h-48 opacity-70"><Juncos class="h-full w-full" semilla={8} /></div>
+      <div class="relative mx-auto max-w-6xl">
+        <a href="/" class="inline-flex items-center gap-2 text-sm font-semibold text-niebla hover:text-ambar"><Icono n="atras" class="size-4" /> Volver al inicio</a>
+        <h1 class="titulo mt-6 text-7xl md:text-9xl">Programas <span class="acento block text-ambar md:inline">de pesca</span></h1>
+        <p class="mt-5 max-w-xl text-lg text-niebla">Todos incluyen guía, equipo, chalecos salvavidas y captura y suelta. Precios en pesos chilenos por persona.</p>
+        <nav class="mt-8 flex flex-wrap gap-2" aria-label="Programas">
+          {programas.map((p) => <a href={`#${p.id}`} class="rounded-lg border border-niebla/30 px-4 py-2 text-sm font-semibold hover:border-ambar hover:text-ambar">{p.nombre}</a>)}
+        </nav>
+      </div>
+    </section>
+
+    <div class="gutter bg-abismo pb-24">
+      <div class="mx-auto grid max-w-6xl gap-8">
+        {programas.map((p, i) => (
+          <article id={p.id} class="programa panel grid scroll-mt-28 gap-8 rounded-2xl p-7 md:grid-cols-[1.2fr_1fr] md:p-10">
+            <div>
+              {p.destacado && <span class="mb-4 inline-block rounded-md bg-ambar px-3 py-1 text-xs font-bold text-abismo">El más pedido</span>}
+              <h2 class="titulo text-5xl md:text-6xl">{p.nombre}</h2>
+              <p class="mt-4 text-lg text-niebla">{p.resumen}</p>
+              <dl class="mt-8 grid grid-cols-2 gap-5 text-sm">
+                <div><dt class="flex items-center gap-2 text-niebla"><Icono n="reloj" class="size-4" /> Duración</dt><dd class="mt-1 font-semibold">{p.duracion}</dd></div>
+                <div><dt class="flex items-center gap-2 text-niebla"><Icono n="calendario" class="size-4" /> Horario</dt><dd class="mt-1 font-semibold">{p.horario}</dd></div>
+                <div><dt class="flex items-center gap-2 text-niebla"><Icono n="personas" class="size-4" /> Grupo</dt><dd class="mt-1 font-semibold">{p.personas}</dd></div>
+                <div><dt class="flex items-center gap-2 text-niebla"><Icono n="pez" class="size-4" /> Nivel</dt><dd class="mt-1 font-semibold">{p.nivel}</dd></div>
+              </dl>
+            </div>
+            <div class="flex flex-col rounded-xl bg-abismo/60 p-6">
+              <p class="text-sm font-semibold text-niebla">Incluye</p>
+              <ul class="mt-3 flex-1 space-y-2.5">
+                {p.incluye.map((x) => <li class="flex items-center gap-3"><Icono n="check" class="size-4 text-oliva" /> {x}</li>)}
+              </ul>
+              <p class="mt-6 text-sm text-niebla">Desde <span class="titulo text-5xl text-espuma">{precio(p.precio)}</span> {p.unidad}</p>
+              <div class="mt-5 grid gap-3 sm:grid-cols-2">
+                <a href={`/?programa=${encodeURIComponent(p.nombre)}#reservar`} class="boton boton-ambar">Reservar</a>
+                <a href={wa(`Hola, quiero más información del programa "${p.nombre}"`, sitio.whatsapp)} target="_blank" rel="noopener" class="boton boton-linea"><Icono n="whatsapp" /> Consultar</a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <p class="mx-auto mt-10 max-w-6xl text-sm text-niebla">¿Grupo grande, empresa o salida de varios días? <a href={wa('Hola, quiero armar una salida de pesca a medida', sitio.whatsapp)} target="_blank" rel="noopener" class="font-semibold text-ambar hover:underline">Escríbenos y la armamos a medida.</a></p>
+    </div>
+  </main>
+</Base>

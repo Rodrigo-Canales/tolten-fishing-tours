@@ -1,0 +1,30 @@
+[
+  {
+    "id": "medio-dia", "nombre": "Medio día en el Toltén", "duracion": "5 horas", "personas": "1 a 2 por guía",
+    "precio": 90000, "unidad": "por persona", "nivel": "Todos los niveles", "destacado": false,
+    "resumen": "Una flotada corta en bote por los mejores tramos del Toltén. Ideal para partir o si tienes poco tiempo.",
+    "incluye": ["Guía de pesca", "Bote y chalecos salvavidas", "Equipo de spinning o mosca", "Snack y agua"],
+    "horario": "Mañana 07:00 o tarde 15:00"
+  },
+  {
+    "id": "dia-completo", "nombre": "Día completo de flotada", "duracion": "9 horas", "personas": "1 a 2 por guía",
+    "precio": 160000, "unidad": "por persona", "nivel": "Todos los niveles", "destacado": true,
+    "resumen": "Bajamos el río de punta a punta, con almuerzo a la orilla y las horas de más pique de la mañana y la tarde.",
+    "incluye": ["Guía de pesca", "Bote y chalecos salvavidas", "Equipo completo", "Almuerzo ribereño", "Fotos de tus capturas"],
+    "horario": "06:30 a 15:30"
+  },
+  {
+    "id": "mahuidanche", "nombre": "Afluentes exclusivos", "duracion": "Día completo", "personas": "Máximo 2",
+    "precio": 190000, "unidad": "por persona", "nivel": "Intermedio", "destacado": false,
+    "resumen": "Río Mahuidanche y afluentes de acceso privado. Agua tranquila, poca presión de pesca y truchas desconfiadas.",
+    "incluye": ["Guía de pesca", "Acceso privado", "Equipo completo", "Almuerzo", "Traslado desde el punto de encuentro"],
+    "horario": "06:30 a 16:00"
+  },
+  {
+    "id": "iniciacion-mosca", "nombre": "Iniciación al fly fishing", "duracion": "4 horas", "personas": "1 a 3",
+    "precio": 60000, "unidad": "por persona", "nivel": "Principiante", "destacado": false,
+    "resumen": "Aprende a lanzar con mosca desde la orilla: armado, lances básicos, lectura de agua y captura y suelta.",
+    "incluye": ["Instructor", "Caña de mosca y moscas", "Material de apoyo", "Café de campo"],
+    "horario": "A coordinar"
+  }
+]

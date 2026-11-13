@@ -1,0 +1,44 @@
+[
+  {
+    "id": "arcoiris",
+    "nombre": "Trucha arcoíris",
+    "cientifico": "Oncorhynchus mykiss",
+    "tamano": "40 a 60 cm",
+    "peso": "1 a 3 kg",
+    "tecnica": "Mosca seca, ninfa y spinning",
+    "mejor": "Noviembre a enero",
+    "dato": "Salta apenas siente el anzuelo. La más peleadora del Toltén.",
+    "modelo": {
+      "archivo": "",
+      "girar": 0
+    }
+  },
+  {
+    "id": "cafe",
+    "nombre": "Trucha café",
+    "cientifico": "Salmo trutta",
+    "tamano": "45 a 70 cm",
+    "peso": "1,5 a 5 kg",
+    "tecnica": "Streamer y spinning al atardecer",
+    "mejor": "Febrero a abril",
+    "dato": "Desconfiada y de hábitos nocturnos. Los ejemplares grandes se esconden bajo los troncos.",
+    "modelo": {
+      "archivo": "",
+      "girar": 0
+    }
+  },
+  {
+    "id": "chinook",
+    "nombre": "Salmón chinook",
+    "cientifico": "Oncorhynchus tshawytscha",
+    "tamano": "70 a 110 cm",
+    "peso": "8 a 20 kg",
+    "tecnica": "Spinning pesado y mosca de dos manos",
+    "mejor": "Febrero a abril",
+    "dato": "Sube desde el mar a desovar. Una pelea que puede durar media hora.",
+    "modelo": {
+      "archivo": "",
+      "girar": 0
+    }
+  }
+]

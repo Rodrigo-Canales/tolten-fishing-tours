@@ -1,0 +1,7 @@
+[
+  { "fecha": "2026-11-14", "titulo": "Apertura de temporada", "programa": "Día completo de flotada", "cupos": 2, "detalle": "Primera flotada del año en el Toltén." },
+  { "fecha": "2026-11-21", "titulo": "Flotada Toltén", "programa": "Medio día en el Toltén", "cupos": 4, "detalle": "Salida de mañana, ideal para partir." },
+  { "fecha": "2026-11-28", "titulo": "Evento Entre Ríos", "programa": "Evento", "cupos": 10, "detalle": "Jornada de pesca, tradición y comunidad, con bote de madera y concurso de capturas." },
+  { "fecha": "2026-12-05", "titulo": "Afluentes exclusivos", "programa": "Afluentes exclusivos", "cupos": 2, "detalle": "Río Mahuidanche, acceso privado." },
+  { "fecha": "2026-12-12", "titulo": "Clínica de fly fishing", "programa": "Iniciación al fly fishing", "cupos": 3, "detalle": "Lances básicos y captura y suelta." }
+]
