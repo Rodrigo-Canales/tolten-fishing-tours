@@ -18,12 +18,13 @@ Abrir http://localhost:4321
 ## Cómo funcionan los peces (src/lib/rio.ts)
 Cada pez es una foto real recortada (public/img/peces/*.webp) montada en una malla que se dobla
 con una onda de nado, de la cabeza a la cola. El archivo *-alto.png es el mapa de grosor del cuerpo:
-le da volumen y luz a la foto. Arriba de la línea de agua se ve una foto real del Toltén.
+le da volumen y luz a la foto. Arriba de la línea de agua se ve una foto real del puente de Pitrufquén.
+Para cambiarla, edita la llamada a crearRio en src/pages/index.astro (url, corte y gamma).
 
 Para cambiar un pez: reemplaza la foto por otra con fondo transparente, cabeza hacia la derecha,
 y genera su mapa de grosor (cuerpo blanco al centro, aletas casi negras).
 
 ## Créditos de imágenes
 - Trucha arcoíris, trucha café y salmón chinook: Wikimedia Commons, dominio público (USFWS, U.S. FDA)
-- Río Toltén, puente Leufulafquén: Falk2, CC BY-SA 4.0. Panorámica del río Toltén: Maxbalter, CC BY-SA 3.0
+- Puente sobre el Toltén en Pitrufquén (portada): EL GUILLE!, CC BY 2.0. Panorámica del río Toltén: Maxbalter, CC BY-SA 3.0
 - Mapa: © colaboradores de OpenStreetMap (ODbL)

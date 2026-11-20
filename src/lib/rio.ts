@@ -90,7 +90,7 @@ const pezFrag = /* glsl */ `
 // ---------- fondo: superficie, agua y lecho de piedras ----------
 const fondoVert = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const fondoFrag = /* glsl */ `
-  uniform float uT, uAspect, uLinea, uLinea0, uFotoAsp, uResY, uHorizonte, uFotoListo;
+  uniform float uT, uAspect, uLinea, uLinea0, uFotoAsp, uResY, uHorizonte, uFotoListo, uCorte, uGamma;
   uniform sampler2D uFoto;
   uniform vec3 uArriba, uAbajo, uRayo;
   varying vec2 vUv;
@@ -165,14 +165,14 @@ const fondoFrag = /* glsl */ `
     // sobre el agua: foto real del Toltén (encuadre cover)
     if (uv.y > linea) {
       // la línea de agua corta la foto justo en su propia superficie (qW) y la foto sube con ella
-      float qW = 0.4;
+      float qW = uCorte;
       float s = min((1.0 - qW) / max(1.0 - uLinea0, 0.2), uFotoAsp / uAspect);
       vec2 q = vec2(0.5 + (uv.x - 0.5) * uAspect * s / uFotoAsp, qW + (uv.y - uLinea) * s);
       float cerca = smoothstep(0.04, 0.0, uv.y - linea);
       q.x += sin(ax * 40.0 + t * 2.2) * 0.0025 * cerca;
-      vec3 foto = pow(texture2D(uFoto, clamp(q, 0.001, 0.999)).rgb, vec3(0.88)); // un poco más de luz de día
-      foto *= mix(0.62, 1.0, smoothstep(1.0, 0.6, uv.y)); // más oscuro arriba, bajo el menú
-      foto *= mix(0.6, 1.0, smoothstep(0.0, 0.68, uv.x * min(uAspect, 1.7) / 1.7)); // y a la izquierda, detrás del titular
+      vec3 foto = pow(texture2D(uFoto, clamp(q, 0.001, 0.999)).rgb, vec3(uGamma));
+      foto *= mix(0.7, 1.0, smoothstep(1.0, 0.6, uv.y)); // más oscuro arriba, bajo el menú
+      foto *= mix(0.72, 1.0, smoothstep(0.0, 0.68, uv.x * min(uAspect, 1.7) / 1.7)); // y a la izquierda, detrás del titular
       foto = mix(foto, foto * vec3(0.85, 1.0, 1.02), 0.3);
       col = mix(vec3(0.05, 0.12, 0.13), foto, uFotoListo);
       col = mix(col, uRayo, cerca * 0.18);
@@ -209,7 +209,10 @@ let semilla = 7;
 const rnd = () => ((semilla = (semilla * 16807) % 2147483647) / 2147483647);
 const ss = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 
-export function crearRio(canvas: HTMLCanvasElement, especies: Especie[], foto: string): Rio {
+/** corte: altura de la foto (0 abajo, 1 arriba) por donde pasa la línea de agua. gamma: mayor que 1 oscurece la foto */
+export type Foto = { url: string; corte?: number; gamma?: number };
+
+export function crearRio(canvas: HTMLCanvasElement, especies: Especie[], foto: Foto): Rio {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance', alpha: false });
   const movil = matchMedia('(max-width: 767px)').matches;
   renderer.setPixelRatio(Math.min(devicePixelRatio, movil ? 1.5 : 1.75));
@@ -231,12 +234,13 @@ export function crearRio(canvas: HTMLCanvasElement, especies: Especie[], foto: s
   const uniFondo = {
     uT: { value: 0 }, uAspect: { value: 1 }, uLinea: { value: 0.52 }, uLinea0: { value: 0.52 }, uFotoAsp: { value: 1.5 },
     uResY: { value: 1 }, uHorizonte: { value: 0.18 }, uFotoListo: { value: 0 }, uFoto: { value: null as THREE.Texture | null },
+    uCorte: { value: foto.corte ?? 0.4 }, uGamma: { value: foto.gamma ?? 1 },
     uArriba: { value: new THREE.Color(TONOS[0].arriba) }, uAbajo: { value: new THREE.Color(TONOS[0].abajo) }, uRayo: { value: new THREE.Color(TONOS[0].rayo) },
   };
   const fondo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.ShaderMaterial({ uniforms: uniFondo, vertexShader: fondoVert, fragmentShader: fondoFrag, depthWrite: false, depthTest: false }));
   fondo.position.z = -60; fondo.renderOrder = -10; fondo.frustumCulled = false;
   camara.add(fondo);
-  const pFoto = tex(foto).then((t) => { uniFondo.uFoto.value = t; uniFondo.uFotoAsp.value = (t.image as HTMLImageElement).width / (t.image as HTMLImageElement).height; });
+  const pFoto = tex(foto.url).then((t) => { uniFondo.uFoto.value = t; uniFondo.uFotoAsp.value = (t.image as HTMLImageElement).width / (t.image as HTMLImageElement).height; });
 
   // sedimento
   const NP = movil ? 260 : 520;
