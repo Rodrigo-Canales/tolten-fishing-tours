@@ -1,0 +1,157 @@
+---
+// Mapa del río Toltén con su curso real (OpenStreetMap), proyectado en build.
+import geo from '../data/rio-tolten.json';
+
+type P = [number, number];
+const LON0 = -73.32, LON1 = -71.8, LAT0 = -38.84, LAT1 = -39.52;
+const K = Math.cos((((LAT0 + LAT1) / 2) * Math.PI) / 180);
+const W = 1000;
+const esc = W / ((LON1 - LON0) * K);
+const H = Math.round((LAT0 - LAT1) * esc);
+const pr = ([lon, lat]: P): P => [(lon - LON0) * K * esc, (LAT0 - lat) * esc];
+const ruta = (pts: P[], cerrar = false) => pts.map((p, i) => { const [x, y] = pr(p); return `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`; }).join('') + (cerrar ? 'Z' : '');
+
+// distancia real a lo largo del Toltén
+const hav = (a: P, b: P) => {
+  const r = Math.PI / 180, dLa = (b[1] - a[1]) * r, dLo = (b[0] - a[0]) * r;
+  const h = Math.sin(dLa / 2) ** 2 + Math.cos(a[1] * r) * Math.cos(b[1] * r) * Math.sin(dLo / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(h));
+};
+const rio = geo.tolten as P[];
+const acum = [0];
+for (let i = 1; i < rio.length; i++) acum.push(acum[i - 1] + hav(rio[i - 1], rio[i]));
+const total = acum.at(-1)!;
+const fraccion = (p: P) => {
+  let mejor = 0, d = Infinity;
+  rio.forEach((q, i) => { const e = hav(p, q); if (e < d) { d = e; mejor = i; } });
+  return { f: acum[mejor] / total, en: rio[mejor] };
+};
+
+// costa: se cierra hacia el borde izquierdo para pintar el océano
+const costa = geo.coast as P[];
+const oceano = ruta(costa) + `L${0} ${pr(costa.at(-1)!)[1].toFixed(1)}L0 ${H}L0 0L${pr(costa[0])[0].toFixed(1)} 0Z`;
+
+// grilla de coordenadas cada 15'
+const grados = (v: number, h: 'S' | 'O') => { const a = Math.abs(v), g = Math.floor(a), m = Math.round((a - g) * 60); return `${g}°${String(m).padStart(2, '0')}′ ${h}`; };
+const meridianos = [-73.25, -73, -72.75, -72.5, -72.25, -72].map((lon) => ({ x: pr([lon, LAT0])[0], t: grados(lon, 'O') }));
+const paralelos = [-39, -39.25, -39.5].map((lat) => ({ y: pr([LON0, lat])[1], t: grados(lat, 'S') }));
+
+const pueblos = [
+  { n: 'Villarrica', p: [-72.2274, -39.2781], dx: 10, dy: 22 },
+  { n: 'Pucón', p: [-71.9778, -39.2731], dx: 8, dy: -10 },
+  { n: 'Pitrufquén', p: [-72.6372, -38.9863], dx: -18, dy: -12, ancla: 'end' },
+  { n: 'Freire', p: [-72.6254, -38.9514], dx: 8, dy: -8 },
+  { n: 'Gorbea', p: [-72.6759, -39.1032], dx: 8, dy: 16 },
+  { n: 'Teodoro Schmidt', p: [-73.0892, -38.9967], dx: 0, dy: -14, ancla: 'middle' },
+  { n: 'Nueva Toltén', p: [-73.1639, -39.1782], dx: 12, dy: 4 },
+] as const;
+
+const paradas = [
+  { id: 'nacimiento', p: [-72.2293, -39.275], t: 'Nace en el lago', d: 'El Toltén sale del lago Villarrica con agua fría y clara que baja desde la cordillera.', lado: 'abajo' },
+  { id: 'allipen', p: [-72.5225, -39.014], t: 'Junta con el Allipén', d: 'El río dobla su caudal. Aguas abajo empiezan los pozones con truchas grandes.', lado: 'arriba' },
+  { id: 'flotada', p: [-72.6372, -38.9863], t: 'Tramo medio', d: 'Correderas, pozones y orillas con troncos frente a Pitrufquén. Aquí hacemos la flotada.', lado: 'abajo' },
+  { id: 'mahuidanche', p: [-72.979, -39.034], t: 'Río Mahuidanche', d: 'Afluente de aguas tranquilas y acceso privado. Truchas grandes y desconfiadas.', lado: 'abajo', soloPunto: true },
+  { id: 'mar', p: [-73.2234, -39.2516], t: 'Desembocadura', d: 'Por aquí entra el chinook desde el mar cuando sube a desovar, entre febrero y abril.', lado: 'arriba' },
+].map((s) => {
+  const { f, en } = fraccion(s.p as P);
+  const [x, y] = pr((s.soloPunto ? s.p : en) as P);
+  return { ...s, f, x, y, km: Math.round(f * 123) };
+});
+
+const volcan = pr([-71.9396, -39.421]);
+const escala10 = 10 / (111.32 * K) * K * esc; // 10 km en unidades del mapa
+const xEsc = 60, yEsc = H - 40;
+---
+<div class="mapa-rio relative" style={`aspect-ratio:${W}/${H}`} data-total={total.toFixed(1)}>
+  <svg viewBox={`0 0 ${W} ${H}`} class="absolute inset-0 h-full w-full" role="img" aria-labelledby="mapa-titulo">
+    <title id="mapa-titulo">Curso del río Toltén desde el lago Villarrica hasta el océano Pacífico</title>
+    <defs>
+      <filter id="brillo" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+      <pattern id="olas" width="14" height="8" patternUnits="userSpaceOnUse"><path d="M0 5 Q3.5 2 7 5 T14 5" fill="none" stroke="#9db5ad" stroke-opacity="0.12" stroke-width="0.8" /></pattern>
+      <radialGradient id="halo-lago"><stop offset="0" stop-color="#2f7a72" stop-opacity="0.35" /><stop offset="1" stop-color="#2f7a72" stop-opacity="0" /></radialGradient>
+    </defs>
+
+    <path d={oceano} fill="#0a2629" />
+    <path d={oceano} fill="url(#olas)" />
+    <path d={ruta(costa)} fill="none" stroke="#4d8d86" stroke-opacity="0.55" stroke-width="1.2" />
+    <text x="26" y={H * 0.62} fill="#9db5ad" fill-opacity="0.55" font-size="13" letter-spacing="4" class="mapa-mar" transform={`rotate(-90 26 ${H * 0.62})`}>OCÉANO PACÍFICO</text>
+
+    <g class="grilla" stroke="#9db5ad" stroke-opacity="0.08" stroke-width="1">
+      {meridianos.map((m) => <line x1={m.x} y1="0" x2={m.x} y2={H} />)}
+      {paralelos.map((p) => <line x1="0" y1={p.y} x2={W} y2={p.y} />)}
+    </g>
+    <g class="coord" fill="#9db5ad" fill-opacity="0.45" font-size="11">
+      {meridianos.map((m) => <text x={m.x + 5} y="16">{m.t}</text>)}
+      {paralelos.map((p) => <text x={W - 6} y={p.y - 5} text-anchor="end">{p.t}</text>)}
+    </g>
+
+    <ellipse cx={pr([-72.1, -39.27])[0]} cy={pr([-72.1, -39.27])[1]} rx="120" ry="70" fill="url(#halo-lago)" />
+    <path d={ruta(geo.lago as P[], true)} class="lago" fill="#164a4b" stroke="#4fa9a0" stroke-opacity="0.7" stroke-width="1.2" />
+    <text x={pr([-72.105, -39.235])[0]} y={pr([-72.105, -39.235])[1]} class="rotulo-agua" text-anchor="middle">Lago Villarrica</text>
+
+    <g class="volcan" transform={`translate(${volcan[0].toFixed(1)} ${volcan[1].toFixed(1)})`}>
+      <path d="M-11 6 L0 -11 L11 6Z" fill="#1e3a2b" stroke="#eaf0e6" stroke-opacity="0.6" stroke-width="1.2" />
+      <path d="M-4 -4.5 L0 -11 L4 -4.5 L1.5 -3 L0 -5 L-1.5 -3Z" fill="#eaf0e6" fill-opacity="0.85" />
+      <text x="0" y="22" class="rotulo-pueblo" text-anchor="middle">Volcán Villarrica</text>
+    </g>
+
+    <path id="rio-allipen" class="afluente" d={ruta(geo.allipen as P[])} data-f={fraccion((geo.allipen as P[]).at(-1)!).f.toFixed(4)} />
+    <path id="rio-donguil" class="afluente" d={ruta(geo.donguil as P[])} data-f={fraccion((geo.donguil as P[]).at(-1)!).f.toFixed(4)} />
+    <text x={pr([-72.12, -38.955])[0]} y={pr([-72.12, -38.955])[1]} class="rotulo-agua rotulo-afluente">río Allipén</text>
+    <text x={pr([-72.6, -39.18])[0]} y={pr([-72.6, -39.18])[1]} class="rotulo-agua rotulo-afluente" text-anchor="middle">río Donguil</text>
+
+    <path d={ruta(rio)} class="rio-fantasma" />
+    <path id="rio-principal" d={ruta(rio)} class="rio-trazo" filter="url(#brillo)" />
+
+    {pueblos.map((t) => { const [x, y] = pr(t.p as unknown as P); return (
+      <g class="pueblo">
+        <circle cx={x} cy={y} r="2.6" fill="#eaf0e6" fill-opacity="0.8" />
+        <text x={x + t.dx} y={y + t.dy} class="rotulo-pueblo" text-anchor={'ancla' in t ? t.ancla : 'start'}>{t.n}</text>
+      </g>
+    ); })}
+
+    {paradas.map((s) => (
+      <g class="parada" data-id={s.id} data-f={s.f.toFixed(4)} style="opacity:0">
+        <circle cx={s.x} cy={s.y} r="15" class="parada-onda" />
+        <circle cx={s.x} cy={s.y} r="5.5" fill="#f2a548" stroke="#061416" stroke-width="2" />
+      </g>
+    ))}
+    <circle id="punta-rio" r="6" fill="#ffe2b0" style="opacity:0" filter="url(#brillo)" />
+
+    <g class="escala" transform={`translate(${xEsc} ${yEsc})`}>
+      <rect x="0" y="0" width={escala10 / 2} height="5" fill="#eaf0e6" fill-opacity="0.75" />
+      <rect x={escala10 / 2} y="0" width={escala10 / 2} height="5" fill="none" stroke="#eaf0e6" stroke-opacity="0.75" />
+      <text x="0" y="20" class="rotulo-pueblo">0</text>
+      <text x={escala10} y="20" class="rotulo-pueblo" text-anchor="middle">10 km</text>
+    </g>
+    <g transform={`translate(${W - 34} 48)`} class="norte">
+      <path d="M0 -16 L6 6 L0 2 L-6 6Z" fill="#eaf0e6" fill-opacity="0.8" />
+      <text x="0" y="22" text-anchor="middle" class="rotulo-pueblo">N</text>
+    </g>
+  </svg>
+
+  {paradas.map((s) => (
+    <div class={`nota-rio nota-${s.lado} panel absolute hidden rounded-xl p-4 md:block`} data-id={s.id} style={`--x:${(s.x / W) * 100}%; --y:${(s.y / H) * 100}%; --ax:${s.x / W < 0.2 ? '-14%' : s.x / W > 0.8 ? '-86%' : '-50%'}`}>
+      <p class="flex items-baseline justify-between gap-3"><span class="titulo text-2xl text-ambar">{s.t}</span><span class="acento text-niebla">km {s.km}</span></p>
+      <p class="mt-1 text-sm text-niebla">{s.d}</p>
+    </div>
+  ))}
+  <ul class="sr-only">{paradas.map((s) => <li>{s.t} (km {s.km}): {s.d}</li>)}</ul>
+</div>
+
+<style>
+  .rio-trazo { fill: none; stroke: #f2a548; stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: var(--l, 3000); stroke-dashoffset: var(--l, 3000); }
+  .rio-fantasma { fill: none; stroke: #f2a548; stroke-opacity: 0.14; stroke-width: 2; stroke-linejoin: round; }
+  .afluente { fill: none; stroke: #6fb3a9; stroke-width: 1.6; stroke-linejoin: round; stroke-opacity: 0.85; stroke-dasharray: var(--l, 3000); stroke-dashoffset: var(--l, 3000); }
+  .rotulo-agua { fill: #9fd3c9; font-family: var(--font-serif); font-style: italic; font-size: 17px; }
+  .rotulo-afluente { font-size: 14px; fill-opacity: 0.8; }
+  .rotulo-pueblo { fill: #eaf0e6; fill-opacity: 0.72; font-family: var(--font-sans); font-size: 11.5px; font-weight: 600; letter-spacing: 0.02em; }
+  .coord text, .mapa-mar { font-family: var(--font-sans); }
+  .parada-onda { fill: #f2a548; fill-opacity: 0.18; transform-box: fill-box; transform-origin: center; animation: onda 2.4s ease-out infinite; }
+  @keyframes onda { from { transform: scale(0.6); opacity: 1; } to { transform: scale(1.8); opacity: 0; } }
+  .nota-rio { left: var(--x); top: var(--y); width: 15.5rem; opacity: 0; transition: opacity 0.45s, translate 0.45s; pointer-events: none; }
+  .nota-arriba { transform: translate(var(--ax), calc(-100% - 22px)); translate: 0 8px; }
+  .nota-abajo { transform: translate(var(--ax), 22px); translate: 0 -8px; }
+  .nota-rio.visible { opacity: 1; translate: 0 0; }
+  @media (prefers-reduced-motion: reduce) { .parada-onda { animation: none; } }
+</style>

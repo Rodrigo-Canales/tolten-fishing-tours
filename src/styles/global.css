@@ -62,3 +62,6 @@ html.lenis, html.lenis body { height: auto; }
   .boton-linea { border: 1px solid rgb(234 240 230 / 0.35); color: var(--color-espuma); }
   .boton-linea:hover { background: rgb(234 240 230 / 0.08); border-color: var(--color-espuma); }
 }
+
+/* las máscaras de SplitText no deben cortar tildes ni la Ñ */
+.linea-titulo-mask { padding-block: 0.14em; margin-block: -0.14em; }

@@ -1,6 +1,6 @@
 # Toltén Fishing Tours
 
-Sitio de pesca guiada (Astro + GSAP + Three.js + Lenis).
+Sitio de pesca guiada en el río Toltén (Astro + GSAP + Three.js + Lenis).
 
 ## Correr en local
 npm install
@@ -10,13 +10,20 @@ Abrir http://localhost:4321
 ## Editar contenido (src/data)
 - programas.json: programas, precios, qué incluye
 - salidas.json: próximas salidas y cupos (las pasadas se ocultan solas)
-- especies.json: fichas de trucha arcoíris, café y chinook
+- especies.json: fichas de trucha arcoíris, café y chinook, foto de cada pez y su tamaño relativo (tam)
 - faq.json: preguntas frecuentes
 - sitio.json: WhatsApp, Instagram, temporada, punto de encuentro, tienda aliada
+- rio-tolten.json: curso real del Toltén, Allipén, Donguil, costa y lago Villarrica (OpenStreetMap)
 
-## Modelos 3D reales de los peces
-Por defecto se dibuja un pez procedural. Para usar un modelo real:
-1. Copia el .glb en public/modelos/ (ej: public/modelos/arcoiris.glb)
-2. En src/data/especies.json pon "archivo": "/modelos/arcoiris.glb" en la especie
-3. Si el pez queda mirando al revés usa "girar": 3.1416. Si queda de cabeza, "inclinar": 3.1416
-El modelo se centra, se escala y nada solo. Si el .glb trae animación propia, se usa esa.
+## Cómo funcionan los peces (src/lib/rio.ts)
+Cada pez es una foto real recortada (public/img/peces/*.webp) montada en una malla que se dobla
+con una onda de nado, de la cabeza a la cola. El archivo *-alto.png es el mapa de grosor del cuerpo:
+le da volumen y luz a la foto. Arriba de la línea de agua se ve una foto real del Toltén.
+
+Para cambiar un pez: reemplaza la foto por otra con fondo transparente, cabeza hacia la derecha,
+y genera su mapa de grosor (cuerpo blanco al centro, aletas casi negras).
+
+## Créditos de imágenes
+- Trucha arcoíris, trucha café y salmón chinook: Wikimedia Commons, dominio público (USFWS, U.S. FDA)
+- Río Toltén, puente Leufulafquén: Falk2, CC BY-SA 4.0. Panorámica del río Toltén: Maxbalter, CC BY-SA 3.0
+- Mapa: © colaboradores de OpenStreetMap (ODbL)

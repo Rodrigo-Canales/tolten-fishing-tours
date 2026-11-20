@@ -12,9 +12,9 @@ const {
 } = Astro.props;
 const h = (id: string) => (inicio ? `#${id}` : `/#${id}`);
 const links = [
-  { t: 'Programas', href: '/programas' },
   { t: 'Especies', href: h('especies') },
-  { t: 'Los ríos', href: h('rios') },
+  { t: 'Programas', href: inicio ? '#programas' : '/programas' },
+  { t: 'El río', href: h('rios') },
   { t: 'Salidas', href: h('salidas') },
   { t: 'Preguntas', href: h('preguntas') },
 ];
@@ -89,13 +89,15 @@ const links = [
         <p>© {new Date().getFullYear()} {sitio.nombre}. Pesca con licencia vigente de Sernapesca.</p>
         <p>Sitio por <a href="https://infinode.cl" target="_blank" rel="noopener" class="text-ambar hover:underline">Infinode</a></p>
       </div>
+      <p class="mx-auto mt-4 max-w-7xl text-[0.7rem] leading-relaxed text-niebla/50">Fotos de peces: Wikimedia Commons, dominio público (USFWS, U.S. FDA). Fotos del río Toltén: Falk2 (CC BY-SA 4.0) y Maxbalter (CC BY-SA 3.0), vía Wikimedia Commons. Mapa: © colaboradores de OpenStreetMap.</p>
     </footer>
 
     <script>
       import Lenis from 'lenis';
       import { gsap } from 'gsap';
       import { ScrollTrigger } from 'gsap/ScrollTrigger';
-      gsap.registerPlugin(ScrollTrigger);
+      import { SplitText } from 'gsap/SplitText';
+      gsap.registerPlugin(ScrollTrigger, SplitText);
 
       const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (!quieto) {
@@ -124,10 +126,13 @@ const links = [
       menu.querySelectorAll('.cerrar-al-tocar').forEach((a) => a.addEventListener('click', cerrar));
       addEventListener('keydown', (e) => e.key === 'Escape' && cerrar());
 
-      // Aparición de bloques marcados con data-sube
+      // Títulos: cada línea sube desde detrás de una máscara al entrar en pantalla
       if (!quieto) {
-        gsap.utils.toArray<HTMLElement>('[data-sube]').forEach((el) => {
-          gsap.from(el, { y: 40, opacity: 0, duration: 1, ease: 'power3.out', scrollTrigger: { trigger: el, start: 'top 85%' } });
+        document.fonts.ready.then(() => {
+          gsap.utils.toArray<HTMLElement>('[data-titulo]').forEach((el) => {
+            const sp = SplitText.create(el, { type: 'lines', mask: 'lines', linesClass: 'linea-titulo' });
+            gsap.from(sp.lines, { yPercent: 105, duration: 1.1, stagger: 0.09, ease: 'power4.out', scrollTrigger: { trigger: el, start: 'top 88%' } });
+          });
         });
       }
     </script>

@@ -8,11 +8,13 @@ import { precio, wa } from '../lib/util';
 ---
 <Base titulo={`Programas | ${sitio.nombre}`} descripcion={`Programas de pesca guiada en el río Toltén: medio día, día completo, afluentes exclusivos e iniciación al fly fishing.`}>
   <main>
-    <section class="gutter relative overflow-hidden bg-[linear-gradient(180deg,#12393c,#061416)] pt-32 pb-24 md:pt-40">
+    <section class="gutter relative overflow-hidden bg-abismo pt-32 pb-24 md:pt-40">
+      <img src="/img/rio-tolten-atardecer.webp" alt="" class="absolute inset-0 h-full w-full object-cover opacity-45" />
+      <div class="absolute inset-0 bg-[linear-gradient(180deg,rgb(6_20_22/0.55),#061416)]" aria-hidden="true"></div>
       <div class="pointer-events-none absolute inset-x-0 bottom-0 h-48 opacity-70"><Juncos class="h-full w-full" semilla={8} /></div>
       <div class="relative mx-auto max-w-6xl">
         <a href="/" class="inline-flex items-center gap-2 text-sm font-semibold text-niebla hover:text-ambar"><Icono n="atras" class="size-4" /> Volver al inicio</a>
-        <h1 class="titulo mt-6 text-7xl md:text-9xl">Programas <span class="acento block text-ambar md:inline">de pesca</span></h1>
+        <h1 class="titulo mt-6 text-7xl md:text-9xl" data-titulo>Programas de pesca</h1>
         <p class="mt-5 max-w-xl text-lg text-niebla">Todos incluyen guía, equipo, chalecos salvavidas y captura y suelta. Precios en pesos chilenos por persona.</p>
         <nav class="mt-8 flex flex-wrap gap-2" aria-label="Programas">
           {programas.map((p) => <a href={`#${p.id}`} class="rounded-lg border border-niebla/30 px-4 py-2 text-sm font-semibold hover:border-ambar hover:text-ambar">{p.nombre}</a>)}

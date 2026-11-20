@@ -8,10 +8,9 @@
     "tecnica": "Mosca seca, ninfa y spinning",
     "mejor": "Noviembre a enero",
     "dato": "Salta apenas siente el anzuelo. La más peleadora del Toltén.",
-    "modelo": {
-      "archivo": "",
-      "girar": 0
-    }
+    "img": "/img/peces/arcoiris.webp",
+    "alto": "/img/peces/arcoiris-alto.png",
+    "tam": 1.0
   },
   {
     "id": "cafe",
@@ -22,10 +21,9 @@
     "tecnica": "Streamer y spinning al atardecer",
     "mejor": "Febrero a abril",
     "dato": "Desconfiada y de hábitos nocturnos. Los ejemplares grandes se esconden bajo los troncos.",
-    "modelo": {
-      "archivo": "",
-      "girar": 0
-    }
+    "img": "/img/peces/cafe.webp",
+    "alto": "/img/peces/cafe-alto.png",
+    "tam": 1.08
   },
   {
     "id": "chinook",
@@ -36,9 +34,8 @@
     "tecnica": "Spinning pesado y mosca de dos manos",
     "mejor": "Febrero a abril",
     "dato": "Sube desde el mar a desovar. Una pelea que puede durar media hora.",
-    "modelo": {
-      "archivo": "",
-      "girar": 0
-    }
+    "img": "/img/peces/chinook.webp",
+    "alto": "/img/peces/chinook-alto.png",
+    "tam": 1.18
   }
 ]
