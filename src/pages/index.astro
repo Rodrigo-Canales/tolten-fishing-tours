@@ -16,28 +16,46 @@ const llevar = ['Lentes polarizados', 'Ropa por capas', 'Parka de lluvia', 'Gorr
   <canvas id="agua" class="fixed inset-0 z-0 h-svh w-full" aria-hidden="true"></canvas>
 
   <main class="relative z-10">
-    <!-- PORTADA: toma mitad sobre el agua, mitad bajo el agua -->
-    <section id="inicio" class="relative h-svh min-h-[34rem] overflow-hidden">
-      <div class="gutter relative mx-auto flex h-full max-w-7xl flex-col">
-        <div class="portada-arriba flex h-[48%] flex-col justify-end pb-[4.5vh]">
-          <p class="aviso inline-flex items-center gap-2 self-start rounded-full bg-abismo/45 px-3 py-1.5 text-sm font-semibold text-espuma backdrop-blur-md"><span class="size-2 animate-pulse rounded-full bg-ambar"></span>{sitio.apertura}</p>
-          <h1 class="titulo-portada titulo mt-4 text-espuma">Pesca guiada en el río Toltén</h1>
-        </div>
-        <div class="portada-abajo mt-auto grid gap-6 pb-7 md:grid-cols-[1fr_auto] md:items-end md:pb-10">
-          <div>
-            <p class="max-w-sm text-base text-espuma/85 md:text-lg">Flotadas en bote, mosca y spinning en el Toltén, el Mahuidanche y afluentes de acceso exclusivo.</p>
-            <div class="mt-5 grid grid-cols-2 gap-3 sm:flex">
-              <a href="#programas" class="boton boton-ambar whitespace-nowrap max-sm:!px-3 max-sm:text-sm"><Icono n="bote" /> Ver programas</a>
-              <a href="#reservar" class="boton boton-linea whitespace-nowrap bg-abismo/30 backdrop-blur max-sm:!px-3 max-sm:text-sm"><Icono n="calendario" /> Reservar</a>
+    <!-- PORTADA: toma mitad sobre el agua, mitad bajo el agua. El titular flota en la superficie -->
+    <section id="inicio" class="relative h-[150svh]">
+      <svg class="absolute size-0" aria-hidden="true" focusable="false">
+        <filter id="ondas" x="-5%" y="-15%" width="110%" height="140%" color-interpolation-filters="sRGB">
+          <feTurbulence type="fractalNoise" baseFrequency="0.009 0.04" numOctaves="1" seed="2" result="ruido">
+            <animate attributeName="baseFrequency" dur="9s" values="0.009 0.04; 0.012 0.056; 0.009 0.04" repeatCount="indefinite" />
+          </feTurbulence>
+          <!-- solo desplaza en horizontal, como la refracción bajo una superficie con ondas -->
+          <feColorMatrix in="ruido" type="matrix" values="1 0 0 0 0  0 0 0 0 0.5  0 0 0 0 0  0 0 0 1 0" result="mapa" />
+          <feDisplacementMap in="SourceGraphic" in2="mapa" scale="11" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </svg>
+      <div class="portada sticky top-0 h-svh overflow-hidden">
+        <div class="portada-flota gutter absolute inset-0">
+          <div class="relative mx-auto h-full max-w-7xl">
+            <p class="aviso inline-flex items-center gap-2 rounded-full bg-abismo/50 px-3 py-1.5 text-sm font-semibold text-espuma backdrop-blur-md"><span class="size-2 shrink-0 animate-pulse rounded-full bg-ambar"></span>{sitio.apertura}</p>
+            <h1 class="titular">
+              <span class="titular-guia acento text-ambar">Pesca guiada en el río</span>
+              <span class="titular-rio titulo">
+                <span class="seco" aria-hidden="true">Toltén</span>
+                <span class="mojado" aria-hidden="true">Toltén</span>
+                <span class="sr-only">Toltén</span>
+              </span>
+            </h1>
+            <p class="lugar hidden items-center gap-1.5 text-xs font-semibold text-espuma/80 md:flex"><Icono n="pin" class="size-4 text-ambar" /> Río Toltén en Villarrica</p>
+            <div class="bajo-agua">
+              <p class="text-base text-espuma/85 md:text-lg">Flotadas en bote, mosca y spinning en el Toltén, el Mahuidanche y afluentes de acceso exclusivo.</p>
+              <div class="mt-5 grid grid-cols-2 gap-3 sm:flex">
+                <a href="#programas" class="boton boton-ambar whitespace-nowrap max-sm:!px-3 max-sm:text-sm"><Icono n="bote" /> Ver programas</a>
+                <a href="#reservar" class="boton boton-linea whitespace-nowrap bg-abismo/30 backdrop-blur max-sm:!px-3 max-sm:text-sm"><Icono n="calendario" /> Reservar salida</a>
+              </div>
             </div>
           </div>
-          <a href="#especies" class="bucear hidden items-center gap-3 text-sm font-semibold text-espuma/80 hover:text-ambar md:flex">Sumérgete <span class="bucear-linea" aria-hidden="true"></span></a>
         </div>
+        <a href="#especies" class="bucear absolute bottom-6 left-1/2 hidden -translate-x-1/2 items-center gap-3 text-sm font-semibold text-espuma/80 hover:text-ambar md:flex">Sumérgete <span class="bucear-linea" aria-hidden="true"></span></a>
       </div>
     </section>
 
     <!-- ESPECIES: el pez de la foto nada y cambia con el scroll -->
-    <section id="especies" class="relative h-[400vh]" aria-labelledby="titulo-especies">
+    <section id="especies" class="relative -mt-[50svh] h-[400vh]" aria-labelledby="titulo-especies">
       <div class="gutter sticky top-0 flex h-svh flex-col overflow-hidden">
         <div class="relative mx-auto flex w-full max-w-7xl flex-1 flex-col pt-24 pb-6 md:pt-28 md:pb-10">
           <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -297,7 +315,28 @@ const llevar = ['Lentes polarizados', 'Ropa por capas', 'Parka de lluvia', 'Gorr
 </Base>
 
 <style>
-  .titulo-portada { font-size: clamp(3rem, min(12.5vw, 11vh), 8.25rem); max-width: 11ch; text-shadow: 0 2px 30px rgb(0 0 0 / 0.35); }
+  /* --agua: dónde queda la superficie en la portada. --T: alto del titular grande */
+  .portada { --agua: 50%; --T: clamp(5.5rem, min(17vw, 32svh), 21rem); }
+  .portada-flota { will-change: transform; }
+  /* la línea de agua pasa justo por la mitad de las mayúsculas (0.4855em desde arriba con interlineado 1) */
+  .titular { position: absolute; left: 0; top: calc(var(--agua) - var(--T) * 0.4855); font-size: var(--T); line-height: 1; }
+  .titular-rio { display: grid; line-height: 1; }
+  .titular-rio > .seco, .titular-rio > .mojado { grid-area: 1 / 1; }
+  .seco { color: var(--color-espuma); clip-path: inset(-0.5em -0.5em 0.5145em -0.5em); text-shadow: 0 0.02em 0.25em rgb(0 0 0 / 0.35); }
+  .mojado { color: #c2ecdf; opacity: 0.86; clip-path: inset(0.4855em -0.5em -0.5em -0.5em); filter: url(#ondas); transform-origin: 50% 0.4855em; transform: scaleY(0.965);
+    -webkit-mask-image: linear-gradient(to bottom, #000 55%, rgb(0 0 0 / 0.55) 90%); mask-image: linear-gradient(to bottom, #000 55%, rgb(0 0 0 / 0.55) 90%); }
+  .titular-guia { position: absolute; left: 0.1em; bottom: calc(100% + var(--T) * 0.07); font-size: 0.215em; line-height: 1.05; white-space: nowrap; text-shadow: 0 1px 14px rgb(0 0 0 / 0.5); }
+  .aviso { position: absolute; left: 0; bottom: calc(100% - var(--agua) + var(--T) * 0.81 + 0.75rem); }
+  .lugar { position: absolute; right: 0; bottom: calc(100% - var(--agua) + 0.9rem); text-shadow: 0 1px 10px rgb(0 0 0 / 0.6); }
+  .bajo-agua { position: absolute; left: 0; top: calc(var(--agua) + var(--T) * 0.4 + 1.6rem); max-width: 25rem; }
+  @media (max-width: 767px) {
+    .portada { --agua: 45%; --T: clamp(4.5rem, min(36vw, 21svh), 10rem); }
+    .bajo-agua { top: auto; right: 0; bottom: 1.5rem; max-width: none; }
+    .aviso { max-width: 100%; }
+  }
+  @media (max-height: 520px) { .aviso, .bucear { display: none; } }
+  @media (max-height: 460px) { .bajo-agua > p { display: none; } .bajo-agua > div { margin-top: 0; } }
+  @media (prefers-reduced-motion: reduce) { .mojado { filter: none; } }
   .bucear-linea { position: relative; width: 4.5rem; height: 1px; background: rgb(234 240 230 / 0.3); overflow: hidden; }
   .bucear-linea::after { content: ''; position: absolute; inset: 0; background: var(--color-ambar); transform: translateX(-100%); animation: corre 2.2s cubic-bezier(0.6, 0, 0.3, 1) infinite; }
   @keyframes corre { 60%, 100% { transform: translateX(100%); } }
@@ -324,7 +363,8 @@ const llevar = ['Lentes polarizados', 'Ropa por capas', 'Parka de lluvia', 'Gorr
   .pregunta .mas { background: rgb(242 165 72 / 0.12); font-size: 1.3rem; transition: transform 0.3s; }
   .pregunta[open] .mas { transform: rotate(45deg); }
   .pregunta[open] { border-color: rgb(242 165 72 / 0.45); }
-  :global(.sin-webgl) #inicio { background: url('/img/rio-tolten-puente.webp') center 30% / cover; }
+  /* sin WebGL: foto arriba y agua lisa abajo, con el mismo corte */
+  :global(.sin-webgl) .portada { background: linear-gradient(to bottom, transparent var(--agua), #0d3b3a var(--agua), #061416), url('/img/rio-tolten-puente.webp') center top / auto calc(var(--agua) * 1.7) no-repeat #061416; }
   :global(.sin-webgl) .pez-respaldo { display: block; }
   .mapa-google { filter: grayscale(0.25) hue-rotate(-10deg) brightness(0.88) contrast(1.05); }
 </style>
@@ -349,45 +389,87 @@ const llevar = ['Lentes polarizados', 'Ropa por capas', 'Parka de lluvia', 'Gorr
   let rio: ReturnType<typeof crearRio> | null = null;
   try { rio = crearRio(lienzo, especies, '/img/rio-tolten-puente.webp'); } catch { document.documentElement.classList.add('sin-webgl'); }
 
-  const lineaPortada = () => (movil() ? 0.55 : 0.52);
-  const poseHero = () => (movil() ? { x: 0.5, y: 0.645, escala: 1 } : { x: 0.66, y: 0.67, escala: 1 });
+  const portada = document.querySelector<HTMLElement>('.portada')!;
+  const flota = document.querySelector<HTMLElement>('.portada-flota')!;
+  const bajo = document.querySelector<HTMLElement>('.bajo-agua')!;
+  const bucear = document.querySelector<HTMLElement>('.bucear')!;
+  // la altura de la superficie se define en CSS (--agua) y la escena la lee de ahí
+  const leerLinea = () => 1 - parseFloat(getComputedStyle(portada).getPropertyValue('--agua')) / 100;
+  let base = leerLinea();
+  // el pez de la portada se ubica según el espacio que deja el texto: a la derecha de la columna en
+  // escritorio y entre el titular y los botones en teléfono
+  const titular = document.querySelector<HTMLElement>('.titular')!;
+  let hero = { x: 0.7, y: 0.745, escala: 1 };
+  const medirPortada = () => {
+    base = leerLinea();
+    const W = portada.offsetWidth, H = portada.offsetHeight;
+    const T = parseFloat(getComputedStyle(titular).fontSize);
+    const agua = (1 - base) * H;
+    if (movil()) {
+      const largo = Math.min(W * 0.74, H * 0.95), alto = largo * 0.45;
+      const arriba = agua + T * 0.4, abajo = bajo.offsetTop;
+      const escala = Math.min(1, Math.max(0.55, (abajo - arriba - H * 0.05 - 10) / alto));
+      hero = { x: 0.5, y: (arriba + abajo) / 2 / H, escala };
+    } else {
+      const largo = Math.min(W * 0.42, H * 0.95);
+      const columna = titular.getBoundingClientRect().left - flota.getBoundingClientRect().left + Math.max(titular.offsetWidth, bajo.offsetWidth);
+      const x = Math.min(0.8, Math.max(0.7, (columna + W * 0.035 + largo / 2) / W));
+      hero = { x, y: (agua + H) / 2 / H + 0.005, escala: 1 };
+    }
+    if (rio && scrollY < 2) { Object.assign(rio.estado.pose, hero); rio.estado.linea0 = base; }
+  };
+  medirPortada();
+  document.fonts.ready.then(medirPortada);
+  addEventListener('resize', medirPortada);
+  const poseHero = () => hero;
   const poseEsp = () => (movil() ? { x: 0.5, y: 0.37, escala: 0.92 } : { x: 0.64, y: 0.54, escala: 1.2 });
+  const SUMERGIDO = 1.2; // superficie fuera de pantalla, por arriba
 
   if (rio) {
     const r = rio;
-    r.estado.linea = r.estado.linea0 = lineaPortada();
+    r.estado.linea = r.estado.linea0 = base;
     Object.assign(r.estado.pose, poseHero());
-    // al cargar, el agua sube y se asienta en su nivel
+    // el titular va amarrado a la superficie: se mueve en el mismo cuadro que la escena, así nunca se despegan
+    let fuera = false;
+    r.alCuadro = (e, alto) => { if (!fuera) flota.style.transform = `translate3d(0, ${(-(e.linea - base) * alto).toFixed(1)}px, 0)`; };
+    // al cargar, el agua sube y se asienta en su nivel, con el titular flotando encima
     if (!quieto) {
-      const nivel = { v: lineaPortada() - 0.2 };
+      const nivel = { v: base - 0.16 };
       r.estado.linea = nivel.v;
-      r.listo.then(() => gsap.to(nivel, { v: lineaPortada(), duration: 2.4, ease: 'elastic.out(1, 0.45)', onUpdate: () => { if (scrollY < 5) r.estado.linea = nivel.v; } }));
+      r.listo.then(() => gsap.to(nivel, { v: base, duration: 2.6, ease: 'elastic.out(1, 0.5)', onUpdate: () => { if (scrollY < 5) r.estado.linea = nivel.v; } }));
     }
 
+    // primera mitad del tramo: la portada queda fija y el agua sube hasta taparlo todo (la cámara se hunde)
     ScrollTrigger.create({
-      trigger: '#inicio', start: 'top top', end: 'bottom top',
+      trigger: '#inicio', start: 'top top', end: () => `+=${portada.offsetHeight}`,
       onUpdate: (st) => {
-        const p = st.progress;
-        r.estado.linea0 = lineaPortada();
-        r.estado.linea = lineaPortada() + ss(0, 0.8, p) * (1.15 - lineaPortada());
+        const p = st.progress, q = clamp(p / 0.5);
+        r.estado.linea0 = base;
+        r.estado.linea = base + Math.pow(q, 1.2) * (SUMERGIDO - base);
         r.estado.fondo = mezcla(0.18, 0.12, p);
-        const a = poseHero(), b = poseEsp(), k = ss(0.1, 1, p);
+        const a = poseHero(), b = poseEsp(), k = ss(0.15, 1, p);
         r.estado.pose.x = mezcla(a.x, b.x, k); r.estado.pose.y = mezcla(a.y, b.y, k); r.estado.pose.escala = mezcla(a.escala, b.escala, k);
         if (p < 1) r.estado.especie = 0;
+        const o = String(1 - ss(0.08, 0.5, q));
+        bajo.style.opacity = o; bucear.style.opacity = o;
+        fuera = q >= 1;
+        flota.style.visibility = fuera ? 'hidden' : 'visible';
+        bajo.style.visibility = q > 0.5 ? 'hidden' : 'visible';
       },
     });
 
     const fichas = [...document.querySelectorAll<HTMLElement>('.ficha')];
     const pestanas = [...document.querySelectorAll<HTMLButtonElement>('.pestana')];
     const tramo = (p: number) => (p < 0.22 ? 0 : p < 0.38 ? (p - 0.22) / 0.16 : p < 0.58 ? 1 : p < 0.74 ? 1 + (p - 0.58) / 0.16 : 2);
-    let actual = -1;
+    let actual = 0;
+    fichas[0].classList.add('activa'); fichas[0].setAttribute('aria-hidden', 'false');
     const stEsp = ScrollTrigger.create({
       trigger: '#especies', start: 'top top', end: 'bottom bottom',
       onUpdate: (st) => {
         const e = tramo(st.progress);
         r.estado.especie = e;
         Object.assign(r.estado.pose, poseEsp());
-        r.estado.linea = 1.15; r.estado.fondo = 0.12;
+        r.estado.linea = SUMERGIDO; r.estado.fondo = 0.12;
         pestanas.forEach((b, i) => b.querySelector<HTMLElement>('.pestana-barra span')!.style.setProperty('--p', String(clamp(e - i + 1))));
         const idx = Math.round(e);
         if (idx !== actual) {
@@ -457,10 +539,9 @@ const llevar = ['Lentes polarizados', 'Ropa por capas', 'Parka de lluvia', 'Gorr
 
   // ---------- Portada ----------
   if (!quieto) {
-    gsap.from('.portada-arriba > *', { y: 40, opacity: 0, duration: 1.2, stagger: 0.12, ease: 'power3.out', delay: 0.15 });
-    gsap.from('.portada-abajo > *', { y: 24, opacity: 0, duration: 1, stagger: 0.1, ease: 'power3.out', delay: 0.7 });
-    gsap.to('.portada-arriba', { yPercent: -35, opacity: 0, ease: 'none', scrollTrigger: { trigger: '#inicio', start: 'top top', end: '60% top', scrub: true } });
-    gsap.to('.portada-abajo', { opacity: 0, ease: 'none', scrollTrigger: { trigger: '#inicio', start: '20% top', end: '55% top', scrub: true } });
+    gsap.from(['.aviso', '.titular-guia', '.titular-rio', '.lugar'], { opacity: 0, duration: 1.4, stagger: 0.14, ease: 'power2.out', delay: 0.2 });
+    gsap.from('.bajo-agua > *', { y: 22, opacity: 0, duration: 1, stagger: 0.12, ease: 'power3.out', delay: 0.9 });
+    gsap.from('.bucear', { opacity: 0, duration: 1, delay: 1.6 });
     gsap.to('.contacto-foto img', { yPercent: -16, ease: 'none', scrollTrigger: { trigger: '#contacto', start: 'top bottom', end: 'bottom top', scrub: true } });
   }
 

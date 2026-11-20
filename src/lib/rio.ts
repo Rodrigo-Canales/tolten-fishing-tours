@@ -12,6 +12,8 @@ export interface Rio {
   estado: { linea: number; linea0: number; especie: number; fondo: number; pose: { x: number; y: number; escala: number } };
   activo: (v: boolean) => void;
   listo: Promise<void>;
+  /** se llama en cada cuadro justo antes de dibujar, con el alto del lienzo en px */
+  alCuadro?: (estado: Rio['estado'], alto: number) => void;
 }
 
 const TONOS: Tono[] = [
@@ -168,8 +170,9 @@ const fondoFrag = /* glsl */ `
       vec2 q = vec2(0.5 + (uv.x - 0.5) * uAspect * s / uFotoAsp, qW + (uv.y - uLinea) * s);
       float cerca = smoothstep(0.04, 0.0, uv.y - linea);
       q.x += sin(ax * 40.0 + t * 2.2) * 0.0025 * cerca;
-      vec3 foto = texture2D(uFoto, clamp(q, 0.001, 0.999)).rgb;
-      foto *= mix(0.5, 0.95, smoothstep(1.0, 0.55, uv.y)); // más oscuro arriba para leer el título
+      vec3 foto = pow(texture2D(uFoto, clamp(q, 0.001, 0.999)).rgb, vec3(0.88)); // un poco más de luz de día
+      foto *= mix(0.62, 1.0, smoothstep(1.0, 0.6, uv.y)); // más oscuro arriba, bajo el menú
+      foto *= mix(0.6, 1.0, smoothstep(0.0, 0.68, uv.x * min(uAspect, 1.7) / 1.7)); // y a la izquierda, detrás del titular
       foto = mix(foto, foto * vec3(0.85, 1.0, 1.02), 0.3);
       col = mix(vec3(0.05, 0.12, 0.13), foto, uFotoListo);
       col = mix(col, uRayo, cerca * 0.18);
@@ -361,7 +364,7 @@ export function crearRio(canvas: HTMLCanvasElement, especies: Especie[], foto: s
         const L = largo * tam;
         const deriva = quieto ? 0 : Math.sin(t * 0.37 + j) * 0.04 * anchoV;
         const x = (p.x - 0.5) * anchoV + deriva + sale * anchoV * 0.95 - llega * anchoV * 0.95 - (j === 0 ? entrada : 0);
-        const y = (0.5 - p.y) * altoV + (quieto ? 0 : Math.sin(t * 0.53 + j * 2) * 0.03 * altoV);
+        const y = (0.5 - p.y) * altoV + (quieto ? 0 : Math.sin(t * 0.53 + j * 2) * 0.022 * altoV);
         pz.malla.position.set(x, y, 0);
         pz.malla.scale.setScalar(L);
         pz.malla.rotation.set(0.05 + raton.sy * 0.12, -0.32 + raton.sx * 0.3 + (quieto ? 0 : Math.sin(t * 0.41 + j) * 0.06), (quieto ? 0 : Math.sin(t * 0.5) * 0.025));
@@ -382,6 +385,7 @@ export function crearRio(canvas: HTMLCanvasElement, especies: Especie[], foto: s
       pz.malla.rotation.set(0.04, pz.dir * -0.25, 0);
     });
 
+    rio.alCuadro?.(estado, H);
     renderer.render(escena, camara);
   }
   bucle();
